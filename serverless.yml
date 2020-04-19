@@ -1,0 +1,39 @@
+service: jnlp-lambdas
+frameworkVersion: ">=1.34.0 <2.0.0"
+
+provider:
+  name: aws
+  region: ${opt:region, env:AWS_REGION, 'eu-west-1'}
+  stage: ${self:custom.stage}
+  deploymentBucket:
+    blockPublicAccess: true
+  timeout: 300 # could be set to the max of 900s (15 mins)
+  logRetentionInDays: 7
+  environment:
+    HOME_DIR: "/tmp"
+  tags:
+    type: jnlp-agent
+
+custom:
+  stage: ${opt:stage, env:STAGE, 'v1'}
+
+package:
+  artifact: lambda/target/agent-dev.jar
+
+functions:
+  agentGitBash:
+    handler: io.jenkins.agent.aws.lambda.AgentHandler
+    runtime: java11
+    memorySize: 128
+    layers:
+      - arn:aws:lambda:${self:provider.region}:744348701589:layer:bash:8
+      - arn:aws:lambda:${self:provider.region}:553035198032:layer:git-lambda2:4
+  agentGitBashNode:
+    handler: io.jenkins.agent.aws.lambda.AgentHandler
+    runtime: java11
+    memorySize: 512
+    layers:
+      - arn:aws:lambda:${self:provider.region}:744348701589:layer:bash:8
+      - arn:aws:lambda:${self:provider.region}:553035198032:layer:git-lambda2:4
+      # https://github.com/lambci/node-custom-lambda#current-version-arns
+      - arn:aws:lambda:${self:provider.region}:553035198032:layer:nodejs12:26

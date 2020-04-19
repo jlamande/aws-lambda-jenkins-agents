@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.serverless</groupId>
+  <artifactId>agent</artifactId>
+  <packaging>jar</packaging>
+  <version>dev</version>
+  <name>agent</name>
+
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jenkins.remoting.version>4.3</jenkins.remoting.version>
+  </properties>
+
+  <repositories>
+      <repository>
+          <id>repo.jenkins-ci.org</id>
+          <url>https://repo.jenkins-ci.org/public/</url>
+      </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-lambda-java-core</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-lambda-java-log4j2</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>remoting</artifactId>
+      <version>${jenkins.remoting.version}</version>
+      <!-- <scope>provided</scope> -->
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer
+                  implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer">
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.github.edwgiz</groupId>
+            <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
+            <version>2.8.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>
