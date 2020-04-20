@@ -1,0 +1,31 @@
+
+# COMMONS
+*.log
+*.tmp
+tmp
+
+# MAVEN
+target/
+work/
+
+# INTELLIJ
+.idea/
+*.iml
+
+# Eclipse
+bin/
+.classpath
+.project
+.settings/
+pom.xml.versionsBackup
+pom.xml.releaseBackup
+release.properties
+.factorypath
+
+# VS Code
+.vscode
+
+# serverless
+.serverless
+# sam
+.aws-sam

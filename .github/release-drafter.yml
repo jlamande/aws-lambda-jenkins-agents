@@ -1,0 +1,4 @@
+# https://github.com/jlamande/.github/blob/master/.github/release-drafter.adoc
+_extends: .github
+name-template: v$NEXT_MINOR_VERSION 🌈
+tag-template: aws-lambda-jenkins-agents-$NEXT_MINOR_VERSION

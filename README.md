@@ -1,4 +1,6 @@
-# λ Lambda Jenkins Agent
+# λ Lambda Jenkins Agents
+
+*Companion repository of the [AWS Lambda Cloud Plugin for Jenkins](https://plugins.jenkins.io/aws-lambda-cloud/)*
 
 A Lambda Jenkins Agent is a Lambda function which connects to Jenkins as do slaves (nodes). Once it is connected and authenticated, Jenkins will pass to the Lambda function the different commands of your build (git, maven, ...).
 
@@ -20,7 +22,6 @@ Requirements :
 - an already deployed SAM environment (S3 bucket and IAM role)
 
 ```
-cd agent
 sam build
 sam deploy --s3-bucket <your sam deployment bucket> --region <aws region>
 ```
@@ -32,7 +33,7 @@ Requirements :
 - node.js/npm
 
 ```
-cd agent/lambda
+cd lambda
 mvn package
 cd ..
 npm install -g serverless
@@ -53,7 +54,7 @@ There are many different ways of deploying Lambdas (AWS SAM, Cloudformation, CDK
 
 #### Build and Package it
 
-Go to the `agent` folder and execute :
+Execute :
 ```
 sam build
 ```
@@ -62,14 +63,14 @@ SAM includes a maven build when using the `sam build` command.
 
 #### Deploy it
 
-Go to the `agent` folder and execute :
+execute :
 ```
 sam deploy --s3-bucket <your sam deployment bucket> --region <aws region>
 ```
 
-Customize the `samconfig.toml` file to avoid passing the 2 parameters and/or adapt to your environment.
+Customize the `samconfig.toml` file if you want to avoid passing the 2 parameters and/or adapt to your environment (stack name, ...).
 
-With this sample (look at the `agent/serverless.yml` file), 2 Lambda functions are deployed into your account :
+With this sample (look at the `serverless.yml` file), 2 Lambda functions are deployed into your account :
 
 1. `jnlp-agent-git-bash` with the 2 prebuilt layers :
    - `arn:aws:lambda:${AWS::Region}:744348701589:layer:bash:8`
@@ -85,7 +86,7 @@ With this sample (look at the `agent/serverless.yml` file), 2 Lambda functions a
 
 First package the lambda (the [shade plugin](https://maven.apache.org/plugins/maven-shade-plugin/) is used to include runtime dependencies in the package) :
 
-Go to the `agent/lambda` folder and execute :
+Go to the `lambda` folder and execute :
 ```
 mvn package
 ```
@@ -96,7 +97,7 @@ In `target` you fill find the agent jar required ot launch a Lambda connecting t
 
 #### Deploy it
 
-Go to the `agent` folder :
+Execute :
 ```
 npm install -g serverless
 sls deploy
@@ -104,7 +105,7 @@ sls deploy
 
 *It assumes that you have configured your AWS local environment. Typically as you would do for the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).*
 
-With this sample (look at the `agent/serverless.yml` file), 2 Lambda functions are deployed into your account :
+With this sample (look at the `serverless.yml` file), 2 Lambda functions are deployed into your account :
 
 1. `jnlp-agent-git-bash` with the 2 prebuilt layers :
    - `arn:aws:lambda:${self:provider.region}:744348701589:layer:bash:8`
