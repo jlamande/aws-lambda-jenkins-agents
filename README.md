@@ -12,7 +12,22 @@ Depending on your needs you will have to deploy as much Lambda functions as nece
 
 ## TL;DR
 
+### Deploy with AWS SAM
 Requirements :
+- java11
+- maven
+- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+- an already deployed SAM environment (S3 bucket and IAM role)
+
+```
+cd agent
+sam build
+sam deploy --s3-bucket <your sam deployment bucket> --region <aws region>
+```
+
+### Deploy with serverless
+Requirements :
+- java11
 - maven
 - node.js/npm
 
@@ -28,11 +43,49 @@ sls deploy
 
 Depending on your Jenkins version, the remoting Library might not work. So adapt the dependency version in the `agent/lambda/pom.xml` to match your Jenkins version.
 
-## Package it
+## Deploy it
+
+There are many different ways of deploying Lambdas (AWS SAM, Cloudformation, CDK, Serverless framework, ...). You'll find in this repository :
+- a `template.yaml` file (and `samconfig.toml`) for deployment with [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/)
+- a `serverless.yml` file for deployment with [Serverless framework](https://serverless.com/framework/docs/)
+
+### Deploy with SAM
+
+#### Build and Package it
+
+Go to the `agent` folder and execute :
+```
+sam build
+```
+
+SAM includes a maven build when using the `sam build` command.
+
+#### Deploy it
+
+Go to the `agent` folder and execute :
+```
+sam deploy --s3-bucket <your sam deployment bucket> --region <aws region>
+```
+
+Customize the `samconfig.toml` file to avoid passing the 2 parameters and/or adapt to your environment.
+
+With this sample (look at the `agent/serverless.yml` file), 2 Lambda functions are deployed into your account :
+
+1. `jnlp-agent-git-bash` with the 2 prebuilt layers :
+   - `arn:aws:lambda:${AWS::Region}:744348701589:layer:bash:8`
+   - `arn:aws:lambda:${AWS::Region}:553035198032:layer:git-lambda2:4`
+2. `jnlp-agent-git-bash-node` with the 3 prebuilt layers :
+   - `arn:aws:lambda:${AWS::Region}:744348701589:layer:bash:8`
+   - `arn:aws:lambda:${AWS::Region}:553035198032:layer:git-lambda2:4`
+   - `arn:aws:lambda:${AWS::Region}:553035198032:layer:nodejs12:26`
+
+### Deploy with the Serverless Framework
+
+#### Build and Package it
 
 First package the lambda (the [shade plugin](https://maven.apache.org/plugins/maven-shade-plugin/) is used to include runtime dependencies in the package) :
 
-Go to the `agent/lambda` folder :
+Go to the `agent/lambda` folder and execute :
 ```
 mvn package
 ```
@@ -41,11 +94,7 @@ mvn package
 
 In `target` you fill find the agent jar required ot launch a Lambda connecting to Jenkins.
 
-## Deploy it (sample)
-
-There are many different ways of deploying Lambdas (AWS SAM, Cloudformation, CDK, Serverless framework, ...). You'll find in this repository my favorite based on the really simple to use [Serverless framework](https://serverless.com/framework/docs/)
-
-### Deploy with the Serverless Framework
+#### Deploy it
 
 Go to the `agent` folder :
 ```
@@ -57,10 +106,10 @@ sls deploy
 
 With this sample (look at the `agent/serverless.yml` file), 2 Lambda functions are deployed into your account :
 
-1. `jnlp-lambdas-v1-agentGitBash` with the 2 prebuilt layers :
+1. `jnlp-agent-git-bash` with the 2 prebuilt layers :
    - `arn:aws:lambda:${self:provider.region}:744348701589:layer:bash:8`
    - `arn:aws:lambda:${self:provider.region}:553035198032:layer:git-lambda2:4`
-2. `jnlp-lambdas-v1-agentGitBashNode` with the 3 prebuilt layers :
+2. `jnlp-agent-git-bash-node` with the 3 prebuilt layers :
    - `arn:aws:lambda:${self:provider.region}:744348701589:layer:bash:8`
    - `arn:aws:lambda:${self:provider.region}:553035198032:layer:git-lambda2:4`
    - `arn:aws:lambda:${self:provider.region}:553035198032:layer:nodejs12:26`
@@ -72,10 +121,10 @@ For advanced configurations, look at the [serverless documentaton](https://serve
 
 ## Use the Lambda Function as an agent in Jenkins
 
-Once your lambda is deployed, and if you have installed the `AWS Lambda Cloud` plugin , go the configuration page of Jenkins (and more recently to the dedicated Cloud Configuration page) to configure an **AWS Lambda Cloud** in Jenkins: 
+Once your lambda(s) is(are) deployed, and if you have installed the `AWS Lambda Cloud` plugin, go the configuration page of Jenkins (and more recently to the dedicated Cloud Configuration page) to configure an **AWS Lambda Cloud** in Jenkins: 
 - Set your AWS Credentials if required (not if your Jenkins is running on AWS EC2/ECS/EKS and its role allows to list and invoke Lambda functions)
 - Declare a function and choose one of the freshly deployed ones
-- Set a label in this function (example: `lambda-node`)
+- Set a label for this function (example: `lambda-node`)
 - Start using it in one of your pipelines as :
 ```groovy
 pipeline {
@@ -97,7 +146,7 @@ pipeline {
 
 ## More about Lambda Layers
 
-You should customize the deployments of the sample Lambdas to add to them the required tools for your builds or deployments (git, aws cli, node, ...). You can choose to **package tools directly in your Lambdas** or to use **Lambda Layers**.
+You should customize the deployments of the sample Lambdas to add to them the required tools for your builds or deployments (git, aws cli, node, ...). You can choose to **include these tools directly into your Lambda packages** or to use **Lambda Layers**.
 
 My recommended way is to use **Lambda Layers** :
 > Lambda functions in a serverless application typically share common dependencies such as SDKs, frameworks, and now runtimes. With layers, you can centrally manage common components across multiple functions enabling better code reuse.
@@ -110,4 +159,4 @@ Example : **[how to add git in your Lambda as a layer](https://blog.enki.com/aws
 
 ### Limitations
 
-- 5 layers maximum per Lambda Function. If you need more, you will have by combining and creating you own ones
+- 5 layers maximum per Lambda Function. If you need more, you will have to combine and create your own ones

@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Jenkins JNLP Agents
+
+Parameters:
+  Version:
+    Type: String
+    Default: "v1"
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 300 # could be set to the max of 900s (15 mins)
+    Runtime: java11
+    Environment:
+      Variables:
+        HOME_DIR: "/tmp"
+
+Resources:
+  AgentGitBashFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      #FunctionName: !Sub ${AWS::StackName}-${Version}-agentGitBash
+      FunctionName: jnlp-agent-git-bash
+      CodeUri: lambda/
+      Handler: io.jenkins.agent.aws.lambda.AgentHandler
+      MemorySize: 128
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:744348701589:layer:bash:8
+        - !Sub arn:aws:lambda:${AWS::Region}:553035198032:layer:git-lambda2:4
+
+  AgentGitBashNodeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      #FunctionName: !Sub ${AWS::StackName}-${Version}-agentGitBashNode
+      FunctionName: jnlp-agent-git-bash-node
+      CodeUri: lambda/
+      Handler: io.jenkins.agent.aws.lambda.AgentHandler
+      MemorySize: 512
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:744348701589:layer:bash:8"
+        - !Sub "arn:aws:lambda:${AWS::Region}:553035198032:layer:git-lambda2:4"
+        # https://github.com/lambci/node-custom-lambda#current-version-arns
+        - !Sub "arn:aws:lambda:${AWS::Region}:553035198032:layer:nodejs12:26"
+
+Outputs:
+  AgentGitBashFunction:
+    Description: "AgentGitBash Lambda Function ARN"
+    Value: !GetAtt AgentGitBashFunction.Arn
+  AgentGitBashFunctionIamRole:
+    Description: "Implicit IAM Role created for AgentGitBash function"
+    Value: !GetAtt AgentGitBashFunction.Arn
+  AgentGitBashNodeFunction:
+    Description: "AgentGitBashNode Lambda Function ARN"
+    Value: !GetAtt AgentGitBashNodeFunction.Arn
+  AgentGitBashNodeFunctionIamRole:
+    Description: "Implicit IAM Role created for AgentGitBashNode function"
+    Value: !GetAtt AgentGitBashNodeFunction.Arn

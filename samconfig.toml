@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "jnlp-lambdas-sam"
+#s3_bucket = "set your own bucket"
+s3_prefix = "jnlp-lambdas"
+#region = "us-east-1"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+tags = "type=jnlp-agent"

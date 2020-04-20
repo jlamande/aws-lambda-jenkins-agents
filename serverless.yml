@@ -22,6 +22,7 @@ package:
 
 functions:
   agentGitBash:
+    name: jnlp-agent-git-bash
     handler: io.jenkins.agent.aws.lambda.AgentHandler
     runtime: java11
     memorySize: 128
@@ -29,6 +30,7 @@ functions:
       - arn:aws:lambda:${self:provider.region}:744348701589:layer:bash:8
       - arn:aws:lambda:${self:provider.region}:553035198032:layer:git-lambda2:4
   agentGitBashNode:
+    name: jnlp-agent-git-bash-node
     handler: io.jenkins.agent.aws.lambda.AgentHandler
     runtime: java11
     memorySize: 512
